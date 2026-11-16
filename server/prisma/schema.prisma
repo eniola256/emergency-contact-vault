@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(cuid())
+  phone        String         @unique          // E.164
+  passwordHash String
+  contactLimit Int            @default(3)      // 3 free + purchased, enforced by backend
+  createdAt    DateTime       @default(now())
+  contacts     Contact[]
+  purchases    SlotPurchase[]
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  phoneEnc  String                                // AES-256-GCM
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  EXPIRED
+  FAILED
+}
+
+// Kept after account deletion (userId set null) because payment records may need to be retained.
+model SlotPurchase {
+  id         String         @id @default(cuid())
+  userId     String?
+  user       User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  packageId  String
+  slots      Int
+  amount     String                                // decimal string, e.g. "3.50"
+  currency   String
+  reference  String         @unique                // sent to Bachs as `reference`
+  checkoutId String?        @unique
+  status     PurchaseStatus @default(PENDING)
+  createdAt  DateTime       @default(now())
+  paidAt     DateTime?
+  @@index([userId])
+}
+
+enum OtpPurpose {
+  REGISTER
+  RESET
+}
+
+model OtpCode {
+  id           String     @id @default(cuid())
+  phone        String
+  purpose      OtpPurpose
+  codeHash     String
+  passwordHash String?                              // pending registration only
+  attempts     Int        @default(0)
+  expiresAt    DateTime
+  createdAt    DateTime   @default(now())
+  @@index([phone, purpose])
+}
+
+model ProcessedEvent {            // webhook de-duplication (SDK does not dedupe)
+  id        String   @id
+  createdAt DateTime @default(now())
+}
+
+model PrivacyReport {
+  id        String   @id @default(cuid())
+  kind      String                                  // remove-my-number | correct-data | other
+  phone     String
+  message   String?
+  createdAt DateTime @default(now())
+}
