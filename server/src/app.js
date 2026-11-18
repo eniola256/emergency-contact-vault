@@ -1,3 +1,4 @@
+import 'express-async-errors';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -9,6 +10,7 @@ import { retrieve } from './routes/retrieve.js';
 import { payments } from './routes/payments.js';
 import { webhooks } from './routes/webhooks.js';
 import { privacy } from './routes/privacy.js';
+
 
 export const app = express();
 app.set('trust proxy', 1);
