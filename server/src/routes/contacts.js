@@ -28,7 +28,7 @@ contacts.post('/', async (req, res) => {
     if (used >= u.contactLimit) return null;
     return tx.contact.create({ data: { userId: req.user.id, name: p.data.name, phoneEnc: encrypt(phone) } });
   });
-  if (!result) return res.status(403).json({ error: 'All your slots are in use. Delete a contact or buy more slots.', code: 'SLOTS_FULL' });
+  if (!result) return res.status(403).json({ error: 'All your slots are in use. Delete a contact to add another.', code: 'SLOTS_FULL' });
   res.status(201).json({ contact: out(result) });
 });
 

@@ -71,8 +71,6 @@ export default function App({ api }) {
 
 /* ---------- landing ---------- */
 function Home({ go, api }) {
-  const [pk, setPk] = useState({ currency: 'USD', packages: [] });
-  useEffect(() => { api.packages().then(setPk).catch(() => {}); }, [api]);
   return <>
     <div className="wrap hero">
       <div>
@@ -82,7 +80,7 @@ function Home({ go, api }) {
           <button className="btn solid big" onClick={() => go('register')}>Create an account</button>
           <button className="btn signal big" onClick={() => go('retrieve')}>Retrieve my contacts</button>
         </div>
-        <p className="fine">3 contact slots are free, permanently. Need more? Buy extra slots once and keep them.</p>
+        <p className="fine">3 contact slots are free, permanently.</p>
       </div>
       <div className="vault" aria-label="Example vault">
         <div className="vault-head"><h3>Example vault</h3><span className="tag">3 of 3 slots used</span></div>
@@ -102,15 +100,9 @@ function Home({ go, api }) {
     </div></section>
 
     <section className="block"><div className="wrap">
-      <h2>Slots, free and paid</h2>
-      <p className="muted" style={{ marginTop: 10, maxWidth: '60ch' }}>Every account starts with 3 slots that never expire. Extra slots are a one-time payment and stack on top of what you have. Deleting a contact frees a slot but never takes away slots you bought.</p>
-      <div className="table-scroll"><table>
-        <thead><tr><th>Plan</th><th>Contact slots</th><th>Price</th></tr></thead>
-        <tbody>
-          <tr><td>Free</td><td className="big num">3</td><td>Free, permanent</td></tr>
-          {pk.packages.map((p) => <tr key={p.id}><td>{p.name}</td><td className="big num">+{p.slots}</td><td className="num">{money(pk.currency, p.price)} once</td></tr>)}
-        </tbody></table></div>
-      <p className="fine">Example: 3 free slots plus a +10 pack gives you 13 slots. Prices shown are placeholders until final pricing is set.</p>
+      <h2>Contact slots</h2>
+      <p className="muted" style={{ marginTop: 10, maxWidth: '60ch' }}>Every account has 3 contact slots, free and permanent. Deleting a contact frees its slot so you can save a different one.</p>
+      <div className="msg info" style={{ marginTop: 20, maxWidth: 460 }}>Payments are not accepted at this time.</div>
     </div></section>
 
     <section className="block"><div className="wrap">
@@ -228,7 +220,7 @@ function Dashboard({ api, user, setUser, go, say }) {
         <div className="vault-head"><h3>Saved numbers</h3>
           <button className="btn solid sm" disabled={full} onClick={() => setEditing({})}>Add contact</button></div>
         <Msg>{err}</Msg>
-        {full && <Msg kind="info">All {data.limit} slots are in use. Delete a contact or buy more slots to add another.</Msg>}
+        {full && <Msg kind="info">All {data.limit} slots are in use. Delete a contact to add another.</Msg>}
         {data.contacts.length === 0 && <div className="empty"><b>No contacts yet.</b><br />Add the people you would need to reach if your phone were gone.</div>}
         {data.contacts.map((c) => <div className="row" key={c.id}>
           <div className="who"><b>{c.name}</b><span className="tel">{fmt(c.phone)}</span></div>
@@ -246,10 +238,12 @@ function Dashboard({ api, user, setUser, go, say }) {
         <h3>Slots</h3>
         <div className="big num">{data.used} <span className="muted" style={{ fontSize: '1.2rem', fontWeight: 600 }}>of {data.limit} used</span></div>
         <Pips used={data.used} limit={data.limit} />
-        <p className="muted" style={{ fontSize: '.92rem' }}>3 are free forever. Extra slots never expire and stack.</p>
-        <h3 style={{ marginTop: 8 }}>Buy more slots</h3>
-        <div className="pkgs">{pk.packages.map((p) => <button key={p.id} className="pkg" onClick={() => buy(p.id)}>
-          <span><b>+{p.slots} slots</b><br /><span className="muted" style={{ fontSize: '.88rem' }}>{p.name}, one-time</span></span><b className="num">{money(pk.currency, p.price)}</b></button>)}</div>
+        <p className="muted" style={{ fontSize: '.92rem' }}>3 slots are free, permanently.</p>
+        <h3 style={{ marginTop: 8 }}>More slots</h3>
+        {pk.enabled
+          ? <div className="pkgs">{pk.packages.map((p) => <button key={p.id} className="pkg" onClick={() => buy(p.id)}>
+              <span><b>+{p.slots} slots</b><br /><span className="muted" style={{ fontSize: '.88rem' }}>{p.name}, one-time</span></span><b className="num">{money(pk.currency, p.price)}</b></button>)}</div>
+          : <div className="msg info">Payments are not accepted at this time.</div>}
         <button className="btn signal" onClick={() => go('retrieve')}>Open retrieval page</button>
       </aside>
     </div>

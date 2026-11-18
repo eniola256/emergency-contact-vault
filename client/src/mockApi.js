@@ -101,7 +101,7 @@ export const api = {
     const u = need(); await wait(); name = String(name || '').trim();
     if (!name) throw fail('Enter a name.'); const p = normalize(phone); if (!p) throw fail('Enter a valid phone number for this contact.');
     const list = read().contacts[u.phone] || (read().contacts[u.phone] = []);
-    if (list.length >= u.limit) throw fail('All your slots are in use. Delete a contact or buy more slots.', 403, 'SLOTS_FULL'); // enforced here, not in the UI
+    if (list.length >= u.limit) throw fail('All your slots are in use. Delete a contact to add another.', 403, 'SLOTS_FULL'); // enforced here, not in the UI
     const c = { id: 'c' + Date.now(), name, phone: p }; list.push(c); save(); return { contact: c };
   },
   async updateContact(id, name, phone) {
@@ -117,7 +117,7 @@ export const api = {
     if (!u || u.hash !== (await hash(p, password))) throw fail('Phone number or password is wrong.', 401);
     return { contacts: read().contacts[p] || [] }; // no session is created
   },
-  async packages() { return { currency: 'USD', packages: PACKAGES }; },
+  async packages() { return { enabled: false, currency: 'USD', packages: [] }; },  // payments are switched off
   async checkout(packageId) {
     const u = need(); await wait(); const pkg = PACKAGES.find((p) => p.id === packageId); if (!pkg) throw fail('Choose a slot package.');
     const reference = 'slt_' + Math.random().toString(16).slice(2, 14);

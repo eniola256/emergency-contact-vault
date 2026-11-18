@@ -15,7 +15,9 @@ cd client && npm install && npm run dev
 npm run build:demo && node build-artifact.mjs
 ```
 
-## Bachs payment flow
+## Bachs payment flow (currently switched off)
+Slot purchases are disabled: the site shows "Payments are not accepted at this time." Set `PAYMENTS_ENABLED=true` (plus the `BACHS_*` and `PRICE_*` values) to turn the flow below back on; the client then shows the packages again.
+
 1. `POST /api/payments/checkout` creates a `PENDING` SlotPurchase, then `bachs.checkoutSessions.create({ pricing, reference, metadata, success_url })`; the buyer is sent to `checkout_url`.
 2. Bachs sends a signed webhook to `POST /api/webhooks/bachs`. Create the endpoint in the Bachs dashboard/API and put its signing secret in `BACHS_WEBHOOK_SECRET`.
 3. The webhook is verified with `bachs.webhooks.constructEvent(rawBody, headers, secret)`. On `collection.succeeded` (status `SUCCEEDED`/`OVERPAID`) the backend matches `data.reference`, checks currency and amount, then in one transaction marks the purchase `PAID` and adds the slots. Event ids are stored so replays do nothing.

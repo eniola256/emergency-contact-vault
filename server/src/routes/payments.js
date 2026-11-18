@@ -7,10 +7,11 @@ import { randomRef } from '../crypto.js';
 
 export const payments = Router();
 
-payments.get('/packages', (req, res) => res.json({ currency: config.currency, packages: PACKAGES }));
+payments.get('/packages', (req, res) => res.json({ enabled: config.paymentsEnabled, currency: config.currency, packages: config.paymentsEnabled ? PACKAGES : [] }));
 
 // Start checkout. Nothing is granted here; slots are only added by the verified webhook.
 payments.post('/checkout', requireUser, async (req, res) => {
+  if (!config.paymentsEnabled) return res.status(503).json({ error: 'Payments are not accepted at this time.' });
   const pkg = PACKAGES.find((p) => p.id === req.body?.packageId);
   if (!pkg) return res.status(400).json({ error: 'Choose a slot package.' });
   const reference = randomRef();

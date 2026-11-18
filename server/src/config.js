@@ -13,6 +13,7 @@ export const config = {
   bachsKey: process.env.BACHS_API_KEY || '',
   bachsWebhookSecret: process.env.BACHS_WEBHOOK_SECRET || '',
   currency: process.env.BACHS_CURRENCY || 'USD',
+  paymentsEnabled: process.env.PAYMENTS_ENABLED === 'true', // off: slot purchases are not available
   defaultCountry: process.env.DEFAULT_COUNTRY || 'NG',
   telegramToken: process.env.TELEGRAM_BOT_TOKEN || '',
   telegramBot: (process.env.TELEGRAM_BOT_USERNAME || '').replace(/^@/, ''),
