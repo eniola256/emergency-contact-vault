@@ -16,8 +16,7 @@ function Field({ id, label, hint, ...p }) {
   return <label className="f" htmlFor={id}>{label}{hint && <small>{hint}</small>}<input id={id} className="in" {...p} /></label>;
 }
 function Brand() {
-  return <a className="brand" href="#" onClick={(e) => { e.preventDefault(); go('home'); }} aria-label="Contact Vault home">
-    <span className="mark" aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <i key={i} className={i === 4 ? 'on' : ''} />)}</span>Contact Vault</a>;
+  return <a className="brand" href="#" onClick={(e) => { e.preventDefault(); go('home'); }} aria-label="AE Vault home">AE Vault</a>;
 }
 
 /* ---------- app shell ---------- */
@@ -51,17 +50,17 @@ export default function App({ api }) {
             <button className="btn sm" onClick={logout}>Log out</button>
           </> : <>
             <button className="btn ghost sm" onClick={() => go('login')}>Sign in</button>
-            <button className="btn sm" onClick={() => go('register')}>Create account</button>
-            <button className="btn signal sm" onClick={() => go('retrieve')}>Retrieve my contacts</button>
+            <button className="btn sm nav-create" onClick={() => go('register')}>Create account</button>
+            <button className="btn accent sm" onClick={() => go('retrieve')}>Retrieve my contacts</button>
           </>}
         </nav>
       </div></header>
       {sms && <div className="wrap" style={{ paddingTop: 14 }}><div className="msg sms" role="status">
-        <b>Simulated Telegram message from @EmergencyNH_bot to <span className="num">{sms.phone}</span>:</b> “Your Contact Vault code is <b className="num">{sms.code}</b>.”{' '}
+        <b>Simulated Telegram message from @EmergencyNH_bot to <span className="num">{sms.phone}</span>:</b> “Your AE Vault code is <b className="num">{sms.code}</b>.”{' '}
         <button className="linkbtn" onClick={() => setSms(null)}>Dismiss</button></div></div>}
       <main><Page {...ctx} /></main>
       <footer><div className="wrap">
-        <span>Contact Vault stores numbers you choose to save. It needs an internet connection and the service to be running.</span>
+        <span>AE Vault stores numbers you choose to save. It needs an internet connection and the service to be running.</span>
         <span><a href="#privacy" onClick={(e) => { e.preventDefault(); go('privacy'); }}>Privacy and data requests</a></span>
       </div></footer>
       {toast && <div className="toast" role="status">{toast}</div>}
@@ -74,13 +73,13 @@ function Home({ go, api }) {
   return <>
     <div className="wrap hero">
       <div>
-        <h1>Your phone is lost. Your people’s numbers aren’t.</h1>
-        <p className="lead">Save the numbers that matter in one secure place. On any device with internet, sign in with your phone number and password and read them back in seconds.</p>
+        <h1>Lose your phone, <em>not your numbers.</em></h1>
+        <p className="lead">Save the numbers that matter. If your phone is lost, sign in from any device and get them back in seconds.</p>
         <div className="cta-row">
           <button className="btn solid big" onClick={() => go('register')}>Create an account</button>
-          <button className="btn signal big" onClick={() => go('retrieve')}>Retrieve my contacts</button>
+          <button className="btn accent big" onClick={() => go('retrieve')}>Retrieve my contacts</button>
         </div>
-        <p className="fine">3 contact slots are free, permanently.</p>
+        <p className="fine">3 contact slots are free, permanently. Saved numbers are encrypted.</p>
       </div>
       <div className="vault" aria-label="Example vault">
         <div className="vault-head"><h3>Example vault</h3><span className="tag">3 of 3 slots used</span></div>
@@ -138,8 +137,8 @@ function Register({ api, setUser, go, say }) {
     </form> : <form className="form" onSubmit={run(async () => { const r = await api.verifyRegistration(phone, code); setUser(r.user); say('Account created with 3 free slots.'); go('dashboard'); })}>
       <ol className="steps">
         <li>{api.demo
-          ? <button type="button" className="btn signal" onClick={() => api.simulateTelegram(phone)}>Simulate: press Start and share my number</button>
-          : <a className="btn signal" href={botUrl} target="_blank" rel="noreferrer">Open Telegram bot</a>}</li>
+          ? <button type="button" className="btn accent" onClick={() => api.simulateTelegram(phone)}>Simulate: press Start and share my number</button>
+          : <a className="btn accent" href={botUrl} target="_blank" rel="noreferrer">Open Telegram bot</a>}</li>
         <li>In Telegram press <b>Start</b>, then tap <b>Share my phone number</b>.</li>
         <li>Type the 6-digit code the bot sends you below.</li>
       </ol>
@@ -244,7 +243,7 @@ function Dashboard({ api, user, setUser, go, say }) {
           ? <div className="pkgs">{pk.packages.map((p) => <button key={p.id} className="pkg" onClick={() => buy(p.id)}>
               <span><b>+{p.slots} slots</b><br /><span className="muted" style={{ fontSize: '.88rem' }}>{p.name}, one-time</span></span><b className="num">{money(pk.currency, p.price)}</b></button>)}</div>
           : <div className="msg info">Payments are not accepted at this time.</div>}
-        <button className="btn signal" onClick={() => go('retrieve')}>Open retrieval page</button>
+        <button className="btn accent" onClick={() => go('retrieve')}>Open retrieval page</button>
       </aside>
     </div>
 
@@ -345,7 +344,7 @@ function Retrieve({ api, go }) {
         <Field id="rt-phone" label="Your registered phone number" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoFocus required />
         <Field id="rt-pw" label="Password" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
         <Msg>{err}</Msg>
-        <button className="btn signal big" disabled={busy}>{busy ? 'Looking up…' : 'Show my contacts'}</button>
+        <button className="btn accent big" disabled={busy}>{busy ? 'Looking up…' : 'Show my contacts'}</button>
         {api.demo && <button type="button" className="btn sm" onClick={() => { setPhone(api.demoPhone); setPw(api.demoPassword); }}>Fill in demo account</button>}
       </form>
       <div className="links"><button className="linkbtn" onClick={() => go('forgot')}>Forgot your password?</button></div>

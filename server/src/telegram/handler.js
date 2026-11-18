@@ -8,7 +8,7 @@ const SHARE_KEYBOARD = { keyboard: [[{ text: 'Share my phone number', request_co
 const NO_KEYBOARD = { remove_keyboard: true };
 
 export const codeMessage = (code) =>
-  `Your Contact Vault code is ${code}. It expires in ${CODE_MINUTES} minutes. If you did not ask for it, ignore this message.`;
+  `Your AE Vault code is ${code}. It expires in ${CODE_MINUTES} minutes. If you did not ask for it, ignore this message.`;
 
 export function makeHandler({ db, send }) {
   return async function handleUpdate(update) {
@@ -22,7 +22,7 @@ export function makeHandler({ db, send }) {
     // 1) Deep link: t.me/Bot?start=<token> arrives as "/start <token>"
     if (typeof msg.text === 'string' && msg.text.startsWith('/start')) {
       const token = msg.text.split(/\s+/)[1];
-      if (!token) return reply('Welcome to Contact Vault verification. To create an account, start on the website and press "Open Telegram bot".');
+      if (!token) return reply('Welcome to AE Vault verification. To create an account, start on the website and press "Open Telegram bot".');
       const row = await db.otpCode.findUnique({ where: { startHash: sha256(token) } });
       if (!row || row.purpose !== 'REGISTER' || row.expiresAt < now) return reply('This link has expired. Go back to the website and start again.');
       await db.otpCode.update({ where: { id: row.id }, data: { telegramId: fromId } });
