@@ -25,5 +25,14 @@ npm run build:demo && node build-artifact.mjs
 - Bachs prices in a currency + decimal amount (default `USD`, set `BACHS_CURRENCY`). Prices in `.env` are placeholders.
 - `checkout.completed` is intentionally ignored; only a confirmed collection grants slots.
 - Passing `req.headers` into `constructEvent` as a `Headers` object follows the SDK docs' fetch-style example; confirm against a real sandbox delivery (`docs.bachs.io/developer-portal/local-testing`).
-- SMS: `src/sms.js` only logs codes. Plug in a real gateway before launch.
 - Not yet tested against a live Postgres/Prisma; run the flows once in your environment.
+
+## Telegram verification (replaces SMS)
+1. Create the bot with @BotFather, then put `TELEGRAM_BOT_TOKEN` and `TELEGRAM_BOT_USERNAME` in `server/.env`. If the token ever leaks, send `/revoke` to @BotFather.
+2. `POST /api/auth/register` stores the pending sign-up and returns a `t.me/<bot>?start=<token>` link. Only the hash of the token is stored.
+3. The user opens the link, presses Start, and taps "Share my phone number". The bot only sends a code if the shared contact is the user's own Telegram account **and** its number equals the number typed on the site.
+4. The user types the code on the site, which creates the account and links the Telegram account to it (one Telegram account per vault).
+5. Password reset sends its code to that linked Telegram account. Users must have started the bot, which sign-up guarantees.
+- Local development uses long polling (`TELEGRAM_MODE=polling`). In production use `TELEGRAM_MODE=webhook`, a public https `API_URL`, and a `TELEGRAM_WEBHOOK_SECRET`.
+- Run `npm test` in `server` for the bot-logic tests.
+- After pulling this change run `npx prisma db push` (adds `User.telegramId` and the new `OtpCode` columns).

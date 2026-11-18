@@ -14,6 +14,10 @@ export const config = {
   bachsWebhookSecret: process.env.BACHS_WEBHOOK_SECRET || '',
   currency: process.env.BACHS_CURRENCY || 'USD',
   defaultCountry: process.env.DEFAULT_COUNTRY || 'NG',
+  telegramToken: process.env.TELEGRAM_BOT_TOKEN || '',
+  telegramBot: (process.env.TELEGRAM_BOT_USERNAME || '').replace(/^@/, ''),
+  telegramMode: process.env.TELEGRAM_MODE || 'polling',          // polling (local) | webhook (production)
+  telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
   sessionHours: 2,
 };
 if (config.encKey.length !== 32) throw new Error('CONTACT_ENCRYPTION_KEY must be 64 hex chars');

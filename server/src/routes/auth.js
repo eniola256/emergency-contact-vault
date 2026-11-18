@@ -5,9 +5,11 @@ import rateLimit from 'express-rate-limit';
 import { prisma } from '../db.js';
 import { normalizePhone } from '../phone.js';
 import { sha256, randomCode } from '../crypto.js';
-import { sendSms } from '../sms.js';
+import crypto from 'node:crypto';
+import { sendTelegram } from '../telegram/index.js';
+import { codeMessage } from '../telegram/handler.js';
 import { startSession, endSession, requireUser, publicUser } from '../auth.js';
-import { FREE_SLOTS } from '../config.js';
+import { FREE_SLOTS, config } from '../config.js';
 
 export const auth = Router();
 
@@ -23,22 +25,22 @@ const passwordSchema = z.string().min(8, 'Use at least 8 characters.').max(128);
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
 const OTP_MINUTES = 10, OTP_MAX_ATTEMPTS = 5, OTP_MAX_PER_HOUR = 3;
 
-async function issueOtp(phone, purpose, passwordHash = null) {
-  const since = new Date(Date.now() - 3600_000);
-  const recent = await prisma.otpCode.count({ where: { phone, purpose, createdAt: { gte: since } } });
-  if (recent >= OTP_MAX_PER_HOUR) return false;
-  await prisma.otpCode.deleteMany({ where: { phone, purpose } });
+const hourAgo = () => new Date(Date.now() - 3600_000);
+
+// Reset codes go to the Telegram account that verified this phone at sign-up.
+async function issueResetCode(user) {
+  const recent = await prisma.otpCode.count({ where: { phone: user.phone, purpose: 'RESET', createdAt: { gte: hourAgo() } } });
+  if (recent >= OTP_MAX_PER_HOUR) return;
   const code = randomCode();
   await prisma.otpCode.create({
-    data: { phone, purpose, codeHash: sha256(`${phone}:${code}`), passwordHash,
+    data: { phone: user.phone, purpose: 'RESET', codeHash: sha256(`${user.phone}:${code}`),
             expiresAt: new Date(Date.now() + OTP_MINUTES * 60_000) },
   });
-  await sendSms(phone, `Your Contact Vault code is ${code}. It expires in ${OTP_MINUTES} minutes.`);
-  return true;
+  await sendTelegram(user.telegramId, codeMessage(code));
 }
 async function checkOtp(phone, purpose, code) {
   const row = await prisma.otpCode.findFirst({ where: { phone, purpose }, orderBy: { createdAt: 'desc' } });
-  if (!row || row.expiresAt < new Date() || row.attempts >= OTP_MAX_ATTEMPTS) return null;
+  if (!row || !row.codeHash || row.expiresAt < new Date() || row.attempts >= OTP_MAX_ATTEMPTS) return null;
   if (row.codeHash !== sha256(`${phone}:${code}`)) {
     await prisma.otpCode.update({ where: { id: row.id }, data: { attempts: { increment: 1 } } });
     return null;
@@ -53,9 +55,20 @@ auth.post('/register', otpLimiter, async (req, res) => {
   const phone = normalizePhone(p.data.phone);
   if (!phone) return bad(res, 'Enter a valid phone number, including your country code if it is not local.');
   if (await prisma.user.findUnique({ where: { phone } })) return bad(res, 'That number already has an account. Sign in instead.', 409);
-  const ok = await issueOtp(phone, 'REGISTER', await bcrypt.hash(p.data.password, 12));
-  if (!ok) return bad(res, 'Too many codes requested. Try again in an hour.', 429);
-  res.json({ phone, expiresInMinutes: OTP_MINUTES });
+  if (!config.telegramToken || !config.telegramBot) {
+    console.error('Telegram bot is not configured (TELEGRAM_BOT_TOKEN / TELEGRAM_BOT_USERNAME)');
+    return bad(res, 'Verification is not available right now. Try again later.', 503);
+  }
+  const recent = await prisma.otpCode.count({ where: { phone, purpose: 'REGISTER', createdAt: { gte: hourAgo() } } });
+  if (recent >= OTP_MAX_PER_HOUR) return bad(res, 'Too many sign-up attempts for this number. Try again in an hour.', 429);
+  await prisma.otpCode.deleteMany({ where: { expiresAt: { lt: hourAgo() } } }); // tidy up old rows
+  // Deep-link token: only the browser that started this sign-up knows it. We store its hash.
+  const token = crypto.randomBytes(18).toString('base64url');
+  await prisma.otpCode.create({
+    data: { phone, purpose: 'REGISTER', startHash: sha256(token), passwordHash: await bcrypt.hash(p.data.password, 12),
+            expiresAt: new Date(Date.now() + OTP_MINUTES * 60_000) },
+  });
+  res.json({ phone, botUrl: `https://t.me/${config.telegramBot}?start=${token}`, expiresInMinutes: OTP_MINUTES });
 });
 
 auth.post('/register/verify', otpLimiter, async (req, res) => {
@@ -65,11 +78,13 @@ auth.post('/register/verify', otpLimiter, async (req, res) => {
   const row = phone && await checkOtp(phone, 'REGISTER', p.data.code);
   if (!row) return bad(res, 'That code is wrong or has expired.');
   try {
-    const user = await prisma.user.create({ data: { phone, passwordHash: row.passwordHash, contactLimit: FREE_SLOTS } });
+    const user = await prisma.user.create({ data: { phone, passwordHash: row.passwordHash, contactLimit: FREE_SLOTS, telegramId: row.telegramId } });
     await prisma.otpCode.deleteMany({ where: { phone, purpose: 'REGISTER' } });
     startSession(res, user.id);
     res.json({ user: await publicUser(user) });
-  } catch {
+  } catch (err) {
+    if (err?.code !== 'P2002') throw err;
+    if (String(err.meta?.target).includes('telegramId')) return bad(res, 'This Telegram account is already linked to another vault.', 409);
     bad(res, 'That number already has an account. Sign in instead.', 409);
   }
 });
@@ -88,7 +103,10 @@ auth.post('/logout', (req, res) => { endSession(res); res.json({ ok: true }); })
 
 auth.post('/forgot', otpLimiter, async (req, res) => {
   const phone = normalizePhone(req.body?.phone);
-  if (phone && await prisma.user.findUnique({ where: { phone } })) await issueOtp(phone, 'RESET');
+  const user = phone ? await prisma.user.findUnique({ where: { phone } }) : null;
+  if (user?.telegramId) {
+    try { await issueResetCode(user); } catch (e) { console.error('Reset code not delivered:', e.message); }
+  }
   res.json({ ok: true }); // same answer whether or not the number exists
 });
 

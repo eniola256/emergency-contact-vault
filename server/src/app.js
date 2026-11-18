@@ -1,3 +1,4 @@
+import 'express-async-errors'; // lets errors in async routes reach the error handler instead of crashing the server
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -9,6 +10,7 @@ import { retrieve } from './routes/retrieve.js';
 import { payments } from './routes/payments.js';
 import { webhooks } from './routes/webhooks.js';
 import { privacy } from './routes/privacy.js';
+import { telegram } from './routes/telegram.js';
 
 export const app = express();
 app.set('trust proxy', 1);
@@ -26,5 +28,6 @@ app.use('/api/contacts', contacts);
 app.use('/api/retrieve', retrieve);
 app.use('/api/payments', payments);
 app.use('/api/privacy', privacy);
+app.use('/api/telegram', telegram);
 
 app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: 'Something went wrong on our side.' }); });

@@ -66,9 +66,11 @@ export const api = {
     if (password.length < 8) throw fail('Use at least 8 characters.');
     const p = normalize(phone); if (!p) throw fail('Enter a valid phone number, including your country code if it is not local.');
     if (read().users[p]) throw fail('That number already has an account. Sign in instead.', 409);
-    pendingReg[p] = await hash(p, password); smsCode(p);
-    return { phone: p, expiresInMinutes: 10 };
+    pendingReg[p] = await hash(p, password);
+    return { phone: p, botUrl: null, expiresInMinutes: 10 };   // the real API returns a t.me deep link
   },
+  // Stands in for the user pressing Start and sharing their number in Telegram.
+  async simulateTelegram(phone) { await wait(300); const p = normalize(phone); if (p && pendingReg[p]) smsCode(p); },
   async verifyRegistration(phone, code) {
     await wait(); const p = normalize(phone);
     if (!p || !pendingReg[p] || !checkCode(p, code)) throw fail('That code is wrong or has expired.');

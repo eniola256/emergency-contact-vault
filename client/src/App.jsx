@@ -39,7 +39,7 @@ export default function App({ api }) {
   return (
     <>
       {api.demo && <div className="demo-bar"><div className="wrap">
-        <b>Demo mode.</b> <span>Everything stays in this browser. Texts and card payments are simulated.</span>
+        <b>Demo mode.</b> <span>Everything stays in this browser. The Telegram bot and card payments are simulated.</span>
         <span className="muted" style={{ color: 'inherit', opacity: .8 }}>Demo login: <span className="num">{api.demoPhone}</span> / {api.demoPassword}</span>
       </div></div>}
       <header className="top"><div className="wrap">
@@ -57,7 +57,7 @@ export default function App({ api }) {
         </nav>
       </div></header>
       {sms && <div className="wrap" style={{ paddingTop: 14 }}><div className="msg sms" role="status">
-        <b>Simulated text message to <span className="num">{sms.phone}</span>:</b> “Your Contact Vault code is <b className="num">{sms.code}</b>.”{' '}
+        <b>Simulated Telegram message from @EmergencyNH_bot to <span className="num">{sms.phone}</span>:</b> “Your Contact Vault code is <b className="num">{sms.code}</b>.”{' '}
         <button className="linkbtn" onClick={() => setSms(null)}>Dismiss</button></div></div>}
       <main><Page {...ctx} /></main>
       <footer><div className="wrap">
@@ -95,7 +95,7 @@ function Home({ go, api }) {
     <section className="block"><div className="wrap">
       <h2>Three steps, then it waits for you</h2>
       <div className="cols">
-        <div><span className="step-no">1</span><h3>Save your numbers</h3><p className="muted">Create an account with your phone number. We text you a code to confirm it is yours.</p></div>
+        <div><span className="step-no">1</span><h3>Save your numbers</h3><p className="muted">Create an account with your phone number. Our Telegram bot confirms the number is yours and sends you a code.</p></div>
         <div><span className="step-no">2</span><h3>Add the people who matter</h3><p className="muted">Name and number for family and close friends. Edit or delete any time.</p></div>
         <div><span className="step-no">3</span><h3>Get them back anywhere</h3><p className="muted">Open the retrieval page on any device, enter your number and password, and read your contacts.</p></div>
       </div>
@@ -118,6 +118,7 @@ function Home({ go, api }) {
       <div className="two">
         <div><h3>What to know</h3><ul>
           <li>Retrieval needs an internet connection and the service being available. Keep a paper copy of your most critical number as well.</li>
+          <li>Signing up and resetting a password need Telegram, on the account that has your registered number.</li>
           <li>Your contact numbers are encrypted when stored. Passwords are hashed and never readable.</li>
           <li>Sessions end after 2 hours, and the retrieval page leaves nothing behind on the device.</li></ul></div>
         <div><h3>Saving other people’s numbers</h3><ul>
@@ -131,21 +132,29 @@ function Home({ go, api }) {
 /* ---------- auth ---------- */
 function Register({ api, setUser, go, say }) {
   const [step, setStep] = useState(1); const [phone, setPhone] = useState(''); const [pw, setPw] = useState(''); const [code, setCode] = useState('');
-  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [botUrl, setBotUrl] = useState(null);
   const run = (fn) => async (e) => { e.preventDefault(); setErr(''); setBusy(true); try { await fn(); } catch (x) { setErr(x.message); } finally { setBusy(false); } };
   return <div className="wrap page"><div className="narrow">
     <h1 style={{ fontSize: '2.3rem' }}>{step === 1 ? 'Create your vault' : 'Confirm your number'}</h1>
-    <p className="muted" style={{ marginTop: 10 }}>{step === 1 ? 'Your phone number and password are all you need to get your contacts back later.' : `Enter the 6-digit code we texted to ${fmt(phone)}.`}</p>
-    {step === 1 ? <form className="form" onSubmit={run(async () => { const r = await api.register(phone, pw); setPhone(r.phone); setStep(2); })}>
+    <p className="muted" style={{ marginTop: 10 }}>{step === 1 ? 'Your phone number and password are all you need to get your contacts back later.' : `Verify ${fmt(phone)} with our Telegram bot, then enter the code it sends you.`}</p>
+    {step === 1 ? <form className="form" onSubmit={run(async () => { const r = await api.register(phone, pw); setPhone(r.phone); setBotUrl(r.botUrl); setStep(2); })}>
       <Field id="reg-phone" label="Phone number" hint="Include your country code if it is not local." type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       <Field id="reg-pw" label="Password" hint="At least 8 characters. Choose one you will remember without your phone." type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
       <Msg>{err}</Msg>
-      <button className="btn solid big" disabled={busy}>{busy ? 'Sending code…' : 'Send code'}</button>
+      <button className="btn solid big" disabled={busy}>{busy ? 'Starting…' : 'Continue'}</button>
+      <p className="fine" style={{ marginTop: 0 }}>Next you will confirm this number in Telegram. You need the Telegram account that uses it.</p>
     </form> : <form className="form" onSubmit={run(async () => { const r = await api.verifyRegistration(phone, code); setUser(r.user); say('Account created with 3 free slots.'); go('dashboard'); })}>
+      <ol className="steps">
+        <li>{api.demo
+          ? <button type="button" className="btn signal" onClick={() => api.simulateTelegram(phone)}>Simulate: press Start and share my number</button>
+          : <a className="btn signal" href={botUrl} target="_blank" rel="noreferrer">Open Telegram bot</a>}</li>
+        <li>In Telegram press <b>Start</b>, then tap <b>Share my phone number</b>.</li>
+        <li>Type the 6-digit code the bot sends you below.</li>
+      </ol>
       <label className="f" htmlFor="reg-code">Code<input id="reg-code" className="in otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} required /></label>
       <Msg>{err}</Msg>
       <button className="btn solid big" disabled={busy || code.length !== 6}>{busy ? 'Checking…' : 'Create account'}</button>
-      <button type="button" className="linkbtn" onClick={() => { setStep(1); setCode(''); setErr(''); }}>Use a different number</button>
+      <button type="button" className="linkbtn" onClick={() => { setStep(1); setCode(''); setErr(''); setBotUrl(null); }}>Use a different number</button>
     </form>}
     <div className="links"><span className="muted">Already have an account?</span><button className="linkbtn" onClick={() => go('login')}>Sign in</button></div>
   </div></div>;
@@ -174,7 +183,7 @@ function Forgot({ api, go, say }) {
   const run = (fn) => async (e) => { e.preventDefault(); setErr(''); setBusy(true); try { await fn(); } catch (x) { setErr(x.message); } finally { setBusy(false); } };
   return <div className="wrap page"><div className="narrow">
     <h1 style={{ fontSize: '2.3rem' }}>Reset your password</h1>
-    <p className="muted" style={{ marginTop: 10 }}>{step === 1 ? 'We will text a code to your registered number.' : 'If that number has an account, a code is on its way. Enter it with a new password.'}</p>
+    <p className="muted" style={{ marginTop: 10 }}>{step === 1 ? 'We will send a code through the Telegram bot, to the Telegram account you verified at sign-up.' : 'If that number has an account, the bot has sent a code. Open Telegram, then enter the code with a new password.'}</p>
     {step === 1 ? <form className="form" onSubmit={run(async () => { await api.forgot(phone); setStep(2); })}>
       <Field id="fp-phone" label="Phone number" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       <Msg>{err}</Msg><button className="btn solid big" disabled={busy}>Send code</button>
