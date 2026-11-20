@@ -49,9 +49,7 @@ export default function App({ api }) {
             <button className="btn ghost sm" onClick={() => go('retrieve')}>Retrieve</button>
             <button className="btn sm" onClick={logout}>Log out</button>
           </> : <>
-            <button className="btn ghost sm" onClick={() => go('login')}>Sign in</button>
-            <button className="btn sm nav-create" onClick={() => go('register')}>Create account</button>
-            <button className="btn accent sm" onClick={() => go('retrieve')}>Retrieve my contacts</button>
+            <button className="btn ghost sm link" onClick={() => go('login')}>Sign in</button>
           </>}
         </nav>
       </div></header>
@@ -59,36 +57,43 @@ export default function App({ api }) {
         <b>Simulated Telegram message from @EmergencyNH_bot to <span className="num">{sms.phone}</span>:</b> “Your AE Vault code is <b className="num">{sms.code}</b>.”{' '}
         <button className="linkbtn" onClick={() => setSms(null)}>Dismiss</button></div></div>}
       <main><Page {...ctx} /></main>
-      <footer><div className="wrap">
+      {(user || route !== 'home') && <footer><div className="wrap">
         <span>AE Vault stores numbers you choose to save. It needs an internet connection and the service to be running.</span>
         <span><a href="#privacy" onClick={(e) => { e.preventDefault(); go('privacy'); }}>Privacy and data requests</a></span>
-      </div></footer>
+      </div></footer>}
       {toast && <div className="toast" role="status">{toast}</div>}
     </>
   );
 }
 
 /* ---------- landing ---------- */
-function Home({ go, api }) {
-  return <>
-    <div className="wrap hero">
-      <div>
-        <h1>Lose your phone, <em>not your numbers.</em></h1>
-        <p className="lead">Save the numbers that matter. If your phone is lost, sign in from any device and get them back in seconds.</p>
-        <div className="cta-row">
-          <button className="btn solid big" onClick={() => go('register')}>Create an account</button>
-          <button className="btn accent big" onClick={() => go('retrieve')}>Retrieve my contacts</button>
-        </div>
-        <p className="fine">3 contact slots are free, permanently. Saved numbers are encrypted.</p>
-      </div>
-      <div className="vault" aria-label="Example vault">
-        <div className="vault-head"><h3>Example vault</h3><span className="tag">3 of 3 slots used</span></div>
-        {[['Mum', '+234 803 555 0142'], ['Tunde (brother)', '+234 902 555 0177'], ['Pastor Ade', '+234 705 555 0119']].map(([n, t]) =>
-          <div className="row" key={n}><div className="who"><b>{n}</b><span className="muted">Saved contact</span></div><span className="tel">{t}</span></div>)}
-        <div style={{ marginTop: 10 }}><Pips used={3} limit={3} /></div>
-      </div>
-    </div>
+const Icon = ({ children }) => <svg viewBox="0 0 24 24" aria-hidden="true">{children}</svg>;
 
+function Home({ go, user }) {
+  return <>
+    <section className="landing"><div className="wrap landing-in">
+      <div className="icons" aria-hidden="true">
+        <span className="tile"><Icon><path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></Icon></span>
+        <i className="join" />
+        <span className="tile hot"><Icon><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" /><path d="M8.8 12.2l2.2 2.2 4.2-4.4" /></Icon></span>
+        <i className="join" />
+        <span className="tile"><Icon><circle cx="12" cy="8" r="3" /><path d="M6.5 20v-1.2A4.3 4.3 0 0 1 10.8 14.5h2.4a4.3 4.3 0 0 1 4.3 4.3V20" /><circle cx="5.2" cy="9.6" r="2" /><circle cx="18.8" cy="9.6" r="2" /><path d="M2.5 18.5v-.8a3 3 0 0 1 3-3M21.5 18.5v-.8a3 3 0 0 0-3-3" /></Icon></span>
+      </div>
+      <h1><span>Phone Numbers</span> <span>Safety Net</span></h1>
+      <p className="lead">Store important contacts and reach them in emergencies.</p>
+      <div className="cta-row">
+        <button className="btn accent big" onClick={() => go(user ? 'dashboard' : 'register')}>Add number</button>
+        <button className="btn outline big" onClick={() => go('retrieve')}>Retrieve number</button>
+      </div>
+      {!user && <a className="tiny" href="#privacy" onClick={(e) => { e.preventDefault(); go('privacy'); }}>Privacy and data requests</a>}
+    </div></section>
+    {user && <MoreInfo go={go} />}
+  </>;
+}
+
+// Extra information, shown only to signed-in users.
+function MoreInfo({ go }) {
+  return <>
     <section className="block"><div className="wrap">
       <h2>Three steps, then it waits for you</h2>
       <div className="cols">
