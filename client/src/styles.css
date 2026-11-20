@@ -173,3 +173,23 @@ input.in:focus, select.in:focus, textarea.in:focus { border-color: var(--ink); o
 
 .landing .fine { margin-inline: auto; }
 .landing h1 { max-width: 9em; }
+
+/* ---- fit the landing page on one screen: sizes follow the viewport height as well as the width ---- */
+html, body { height: 100%; }
+#root { min-height: 100%; display: flex; flex-direction: column; }
+#root > main { flex: 1; display: flex; flex-direction: column; }
+#root > main > * { width: 100%; }
+.landing { flex: 1 0 auto; min-height: 0; padding-block: clamp(10px, 3vh, 40px); }
+.tile { width: clamp(44px, min(8.5vw, 10vh), 80px); }
+.tile.hot { width: clamp(50px, min(9.5vw, 11.5vh), 90px); }
+.icons .join { width: clamp(18px, 4vw, 48px); }
+.landing h1 { font-size: clamp(1.9rem, min(6.4vw, 7.4vh), 4.3rem); margin-top: clamp(14px, 3vh, 30px); line-height: 1.06; }
+.landing .lead { font-size: clamp(.95rem, min(2.2vw, 2.5vh), 1.2rem); margin-top: clamp(8px, 2vh, 18px); max-width: 38ch; }
+.landing .cta-row { margin-top: clamp(14px, 3vh, 28px); gap: 10px; }
+.landing .btn.big { min-height: clamp(42px, 6.2vh, 52px); padding: 8px clamp(16px, 2.4vw, 22px); font-size: clamp(.95rem, 2.2vh, 1.05rem); }
+.landing .fine { margin-top: clamp(8px, 1.6vh, 14px); font-size: clamp(.78rem, 1.8vh, .9rem); }
+.landing .tiny { margin-top: clamp(10px, 2.4vh, 28px); font-size: clamp(.75rem, 1.7vh, .85rem); }
+.top .wrap { min-height: 56px; }
+@media (max-width: 520px) { .demo-bar .demo-note { display: none; } .demo-bar .wrap { padding-block: 5px; font-size: .8rem; } }
+body { margin: 0; }
+.landing .lead { text-wrap: balance; }

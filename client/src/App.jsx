@@ -38,7 +38,7 @@ export default function App({ api }) {
   return (
     <>
       {api.demo && <div className="demo-bar"><div className="wrap">
-        <b>Demo mode.</b> <span>Everything stays in this browser. The Telegram bot and card payments are simulated.</span>
+        <b>Demo mode.</b> <span className="demo-note">Everything stays in this browser. The Telegram bot and card payments are simulated.</span>
         <span className="muted" style={{ color: 'inherit', opacity: .8 }}>Demo login: <span className="num">{api.demoPhone}</span> / {api.demoPassword}</span>
       </div></div>}
       <header className="top"><div className="wrap">
