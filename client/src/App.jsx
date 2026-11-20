@@ -7,6 +7,8 @@ const go = (r) => { window.location.hash = r === 'home' ? '' : r; if (r === 'hom
 export const fmt = (p) => { const m = /^\+234(\d{3})(\d{3})(\d{4})$/.exec(p || ''); return m ? `+234 ${m[1]} ${m[2]} ${m[3]}` : p; };
 const money = (cur, n) => `${cur === 'USD' ? '$' : cur + ' '}${n}`;
 
+const initials = (n) => (String(n).replace(/\(.*?\)/g, '').trim().split(/\s+/).map((w) => (w.match(/\p{L}/u) || [''])[0]).filter(Boolean).slice(0, 2).join("") || "?").toUpperCase();
+
 function Pips({ used, limit }) {
   const shown = Math.min(limit, 30);
   return <div className="pips" role="img" aria-label={`${used} of ${limit} slots used`}>{Array.from({ length: shown }, (_, i) => <i key={i} className={i < used ? 'on' : ''} />)}</div>;
@@ -16,7 +18,7 @@ function Field({ id, label, hint, ...p }) {
   return <label className="f" htmlFor={id}>{label}{hint && <small>{hint}</small>}<input id={id} className="in" {...p} /></label>;
 }
 function Brand() {
-  return <a className="brand" href="#" onClick={(e) => { e.preventDefault(); go('home'); }} aria-label="AE Vault home">AE Vault</a>;
+  return <a className="brand" href="#" onClick={(e) => { e.preventDefault(); go('home'); }} aria-label="AE Vault home"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" /><path d="M8.8 12.2l2.2 2.2 4.2-4.4" /></svg></span>AE Vault</a>;
 }
 
 /* ---------- app shell ---------- */
@@ -228,7 +230,7 @@ function Dashboard({ api, user, setUser, go, say }) {
         {full && <Msg kind="info">All {data.limit} slots are in use. Delete a contact to add another.</Msg>}
         {data.contacts.length === 0 && <div className="empty"><b>No contacts yet.</b><br />Add the people you would need to reach if your phone were gone.</div>}
         {data.contacts.map((c) => <div className="row" key={c.id}>
-          <div className="who"><b>{c.name}</b><span className="tel">{fmt(c.phone)}</span></div>
+          <div className="person"><span className="avatar" aria-hidden="true">{initials(c.name)}</span><div className="who"><b>{c.name}</b><span className="tel">{fmt(c.phone)}</span></div></div>
           <div className="actions">
             {confirmDel === c.id ? <>
               <button className="btn danger sm" onClick={() => remove(c.id)}>Confirm delete</button>
@@ -358,7 +360,7 @@ function Retrieve({ api, go }) {
     </> : <>
       <h1>{list.length ? `${list.length} contact${list.length === 1 ? '' : 's'}` : 'No contacts saved'}</h1>
       <div className="found" role="list">{list.map((c) => <div className="row" role="listitem" key={c.id}>
-        <div className="who"><b>{c.name}</b><span className="tel">{fmt(c.phone)}</span></div>
+        <div className="person"><span className="avatar" aria-hidden="true">{initials(c.name)}</span><div className="who"><b>{c.name}</b><span className="tel">{fmt(c.phone)}</span></div></div>
         <a className="btn solid sm" href={`tel:${c.phone}`}>Call</a></div>)}</div>
       <div className="cta-row"><button className="btn big" onClick={clear}>Done, clear this screen</button></div>
       <p className="fine">If calling does not start from this device, read the number off the screen.</p>
