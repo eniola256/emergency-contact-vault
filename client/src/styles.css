@@ -252,3 +252,15 @@ input.in:focus, select.in:focus, textarea.in:focus { border-color: var(--accent)
 .landing .tile.hot { animation-delay: .07s; } .landing .icons .tile:last-child { animation-delay: .14s; }
 .landing h1 { animation-delay: .2s; } .landing .lead { animation-delay: .28s; } .landing .cta-row { animation-delay: .36s; } .landing .fine { animation-delay: .42s; }
 .landing .lead { max-width: 46ch; }
+
+/* ---- background lives on the page, not on one section: it stays put while content scrolls over it ---- */
+.landing { background: none; }
+.landing::before, .landing::after { content: none; }
+body { --blob-a: 150px; --blob-b: 190px; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(55% 50% at 50% 34%, rgba(11,99,246,.08), transparent 72%); }
+body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(circle at 0% 100%, #D6EFE2 0, #E6F7EE var(--blob-a), transparent calc(var(--blob-a) + 1px)),
+    radial-gradient(circle at 100% 100%, #D6EFE2 0, #E6F7EE var(--blob-b), transparent calc(var(--blob-b) + 1px)); }
+@media (max-width: 520px) { body { --blob-a: 95px; --blob-b: 110px; } }
