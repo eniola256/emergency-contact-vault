@@ -79,12 +79,13 @@ function Home({ go, user }) {
         <i className="join" />
         <span className="tile"><Icon><circle cx="12" cy="8" r="3" /><path d="M6.5 20v-1.2A4.3 4.3 0 0 1 10.8 14.5h2.4a4.3 4.3 0 0 1 4.3 4.3V20" /><circle cx="5.2" cy="9.6" r="2" /><circle cx="18.8" cy="9.6" r="2" /><path d="M2.5 18.5v-.8a3 3 0 0 1 3-3M21.5 18.5v-.8a3 3 0 0 0-3-3" /></Icon></span>
       </div>
-      <h1><span>Phone Numbers</span> <span>Safety Net</span></h1>
-      <p className="lead">Store important contacts and reach them in emergencies.</p>
+      <h1><span>Lose your phone,</span> <span>not your numbers.</span></h1>
+      <p className="lead">Save the numbers that matter. If your phone is lost, sign in from any device and get them back in seconds.</p>
       <div className="cta-row">
-        <button className="btn accent big" onClick={() => go(user ? 'dashboard' : 'register')}>Add number</button>
-        <button className="btn outline big" onClick={() => go('retrieve')}>Retrieve number</button>
+        <button className="btn accent big" onClick={() => go(user ? 'dashboard' : 'register')}>{user ? 'My contacts' : 'Create an account'}</button>
+        <button className="btn outline big" onClick={() => go('retrieve')}>Retrieve my contacts</button>
       </div>
+      <p className="fine">3 contact slots are free, permanently. Saved numbers are encrypted.</p>
       {!user && <a className="tiny" href="#privacy" onClick={(e) => { e.preventDefault(); go('privacy'); }}>Privacy and data requests</a>}
     </div></section>
     {user && <MoreInfo go={go} />}

@@ -1,23 +1,14 @@
-/* Layout: one centered landing section (icon row, headline, two actions); plain sans-serif throughout. */
+/* Layout: one centered landing section. White and blue only: this site has a single light theme on purpose. */
 :root {
-  --bg: #FBF8F5; --surface: #FFFFFF; --sunk: #F1ECE6;
-  --ink: #0C1733; --muted: #667085; --line: #E3DED7; --outline: #BFC7D6;
-  --accent: #0B63F6; --accent-ink: #FFFFFF; --accent-soft: #E3EDFF; --mint: #DDF3E7;
+  color-scheme: light;
+  --bg: #FCFBFA; --surface: #FFFFFF; --sunk: #F1F3F8;
+  --ink: #0C1733; --muted: #667085; --line: #E4E7EE; --outline: #BFC7D6;
+  --accent: #0B63F6; --accent-ink: #FFFFFF; --accent-soft: #E8F0FF; --mint: #DDF3E7;
   --ok: #0E7A4F; --ok-soft: #DCF3E8; --warn: #8A5200; --warn-soft: #FBEFD3; --err: #B3261E; --err-soft: #FBE4E2;
   --font-display: 'Figtree', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
   --r: 14px; --r-sm: 11px;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0C1020; --surface: #141A2E; --sunk: #1B2240;
-  --ink: #F1F3FA; --muted: #A3ABC2; --line: #28304D; --outline: #3B4566;
-  --accent: #5B94FF; --accent-ink: #07122B; --accent-soft: #172447; --mint: #11312B;
-  --ok: #52D69A; --ok-soft: #123626; --warn: #F2B94B; --warn-soft: #3A2C0E; --err: #FF8A80; --err-soft: #3C1816; color-scheme: dark; } }
-:root[data-theme="dark"] {
-  --bg: #0C1020; --surface: #141A2E; --sunk: #1B2240;
-  --ink: #F1F3FA; --muted: #A3ABC2; --line: #28304D; --outline: #3B4566;
-  --accent: #5B94FF; --accent-ink: #07122B; --accent-soft: #172447; --mint: #11312B;
-  --ok: #52D69A; --ok-soft: #123626; --warn: #F2B94B; --warn-soft: #3A2C0E; --err: #FF8A80; --err-soft: #3C1816; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
@@ -43,8 +34,8 @@ nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1.5px solid var(--ink); background: transparent; border-radius: var(--r-sm); padding: 10px 16px; font-weight: 600; cursor: pointer; text-decoration: none; min-height: 44px; transition: transform .12s ease, background .12s ease; }
 .btn:hover { background: var(--sunk); }
 .btn:active { transform: translateY(1px); }
-.btn.solid { background: var(--ink); color: var(--bg); }
-.btn.solid:hover { background: var(--ink); opacity: .88; }
+.btn.solid { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.solid:hover { background: var(--accent); filter: brightness(1.08); }
 .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.accent:hover { background: var(--accent); filter: brightness(1.06); }
 .btn.ghost { border-color: transparent; }
@@ -151,9 +142,9 @@ input.in:focus, select.in:focus, textarea.in:focus { border-color: var(--ink); o
 .scrim { position: fixed; inset: 0; background: rgba(5,10,16,.6); display: grid; place-items: center; padding: 16px; z-index: 20; }
 .modal { background: var(--surface); border: 1.5px solid var(--ink); border-radius: 18px; padding: 24px; width: 100%; max-width: 440px; max-height: 92vh; overflow: auto; }
 .sandbox { border-style: dashed; }
-.demo-bar { background: var(--ink); color: var(--bg); font-size: .88rem; }
+.demo-bar { background: var(--accent-soft); color: var(--ink); border-bottom: 1px solid var(--line); font-size: .88rem; }
 .demo-bar .wrap { padding-block: 8px; display: flex; gap: 6px 16px; flex-wrap: wrap; align-items: center; }
-.demo-bar button { color: var(--bg); }
+.demo-bar button { color: var(--ink); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 12px; z-index: 30; max-width: calc(100vw - 32px); box-shadow: 0 8px 30px rgba(0,0,0,.3); }
 .sms { background: var(--warn-soft); color: var(--warn); }
 
@@ -179,3 +170,6 @@ input.in:focus, select.in:focus, textarea.in:focus { border-color: var(--ink); o
   .top nav .btn.sm { padding: 6px 10px; white-space: nowrap; }
 }
 @media (max-width: 360px) { .brand { font-size: 1.15rem; } .top nav .btn.sm { font-size: .85rem; padding: 6px 8px; } .top .wrap { gap: 4px; } }
+
+.landing .fine { margin-inline: auto; }
+.landing h1 { max-width: 9em; }
