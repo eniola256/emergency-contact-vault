@@ -289,3 +289,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-event
 
 /* signed in: the page scrolls, so give the hero room under the header */
 .landing.signed { padding-block: clamp(48px, 10vh, 110px) clamp(40px, 8vh, 90px); }
+
+/* landing headline: Source Serif 4 */
+.landing h1 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; font-optical-sizing: auto; }
