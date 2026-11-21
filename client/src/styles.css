@@ -303,3 +303,12 @@ body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-event
 .landing .lead { margin-top: clamp(6px, 1.6vh, 16px); }
 .landing .cta-row { margin-top: clamp(10px, 2.4vh, 24px); }
 @media (max-width: 520px) { .landing h1 { font-size: clamp(2rem, min(10.5vw, 7.6vh), 3.4rem); } }
+
+/* laptops and large screens: much bigger headline, sized to the window so it still fits */
+@media (min-width: 1000px) and (min-height: 560px) {
+  .landing h1 { font-size: clamp(4rem, min(9.4vw, 15.2vh), 12rem); max-width: 11em; line-height: 1.02; }
+  .landing .tile { width: clamp(38px, min(5vw, 6.6vh), 64px); }
+  .landing .tile.hot { width: clamp(44px, min(5.8vw, 7.8vh), 74px); }
+  .landing .lead { font-size: clamp(1.05rem, min(1.7vw, 2.7vh), 1.6rem); max-width: 44ch; }
+  .landing .btn.big { font-size: clamp(1rem, 2.3vh, 1.2rem); min-height: clamp(44px, 6.4vh, 58px); }
+}
