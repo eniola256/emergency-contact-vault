@@ -294,3 +294,12 @@ body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-event
 .landing h1 { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; font-optical-sizing: auto; }
 .landing h1 { font-size: clamp(2.3rem, min(7.6vw, 8.6vh), 5.8rem); max-width: 9.5em; }
 @media (max-width: 360px) { .landing h1 { font-size: clamp(1.9rem, min(7.6vw, 7.4vh), 5.8rem); } }
+
+/* headline 50% larger; icons and spacing give back room so the page still fits */
+.landing h1 { font-size: clamp(2.4rem, min(11vw, 12.4vh), 8.2rem); max-width: 10em; line-height: 1.04; }
+.landing .tile { width: clamp(38px, min(7vw, 8.5vh), 68px); }
+.landing .tile.hot { width: clamp(44px, min(8vw, 10vh), 78px); }
+.landing .copy, .landing-in { gap: 0; }
+.landing .lead { margin-top: clamp(6px, 1.6vh, 16px); }
+.landing .cta-row { margin-top: clamp(10px, 2.4vh, 24px); }
+@media (max-width: 520px) { .landing h1 { font-size: clamp(2rem, min(10.5vw, 7.6vh), 3.4rem); } }
