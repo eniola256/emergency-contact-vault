@@ -21,6 +21,27 @@ function Brand() {
   return <a className="brand" href="#" onClick={(e) => { e.preventDefault(); go('home'); }} aria-label="AE Vault home"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" /><path d="M8.8 12.2l2.2 2.2 4.2-4.4" /></svg></span>AE Vault</a>;
 }
 
+const MODALS = {
+  login: ['Sign in', Login], register: ['Create an account', Register],
+  forgot: ['Reset your password', Forgot], retrieve: ['Retrieve my contacts', Retrieve],
+};
+
+function AuthModal({ label, onClose, children }) {
+  useEffect(() => {
+    const prev = document.activeElement;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    const overflow = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = overflow; prev?.focus?.(); };
+  }, []);
+  return <div className="scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="modal auth-modal" role="dialog" aria-modal="true" aria-label={label}>
+      <button className="modal-x" aria-label="Close" onClick={onClose}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
+      {children}
+    </div>
+  </div>;
+}
+
 /* ---------- app shell ---------- */
 export default function App({ api }) {
   const [route, setRoute] = useState(readRoute);
@@ -35,7 +56,8 @@ export default function App({ api }) {
 
   const logout = async () => { await api.logout().catch(() => {}); setUser(null); say('Signed out. Nothing from your vault is left on this screen.'); go('home'); };
   const ctx = { api, user, setUser, say, go };
-  const Page = { home: Home, register: Register, login: Login, forgot: Forgot, dashboard: Dashboard, retrieve: Retrieve, paid: Paid, privacy: Privacy }[route];
+  const modal = MODALS[route];                       // sign in, sign up, reset, retrieve open over the landing page
+  const Page = modal ? Home : { home: Home, dashboard: Dashboard, paid: Paid, privacy: Privacy }[route];
 
   return (
     <>
@@ -58,8 +80,10 @@ export default function App({ api }) {
       {sms && <div className="wrap" style={{ paddingTop: 14 }}><div className="msg sms" role="status">
         <b>Simulated Telegram message from @EmergencyNH_bot to <span className="num">{sms.phone}</span>:</b> “Your AE Vault code is <b className="num">{sms.code}</b>.”{' '}
         <button className="linkbtn" onClick={() => setSms(null)}>Dismiss</button></div></div>}
-      <main><Page {...ctx} /></main>
-      {(user || route !== 'home') && <footer><div className="wrap">
+      <main><Page {...ctx} />
+        {modal && <AuthModal label={modal[0]} onClose={() => go('home')}>{React.createElement(modal[1], ctx)}</AuthModal>}
+      </main>
+      {(user || (route !== 'home' && !modal)) && <footer><div className="wrap">
         <span>AE Vault stores numbers you choose to save. It needs an internet connection and the service to be running.</span>
         <span><a href="#privacy" onClick={(e) => { e.preventDefault(); go('privacy'); }}>Privacy and data requests</a></span>
       </div></footer>}
@@ -133,11 +157,11 @@ function Register({ api, setUser, go, say }) {
   const [step, setStep] = useState(1); const [phone, setPhone] = useState(''); const [pw, setPw] = useState(''); const [code, setCode] = useState('');
   const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [botUrl, setBotUrl] = useState(null);
   const run = (fn) => async (e) => { e.preventDefault(); setErr(''); setBusy(true); try { await fn(); } catch (x) { setErr(x.message); } finally { setBusy(false); } };
-  return <div className="wrap page"><div className="narrow">
-    <h1 style={{ fontSize: '2.3rem' }}>{step === 1 ? 'Create your vault' : 'Confirm your number'}</h1>
+  return <div className="auth">
+    <h1>{step === 1 ? 'Create your vault' : 'Confirm your number'}</h1>
     <p className="muted" style={{ marginTop: 10 }}>{step === 1 ? 'Your phone number and password are all you need to get your contacts back later.' : `Verify ${fmt(phone)} with our Telegram bot, then enter the code it sends you.`}</p>
     {step === 1 ? <form className="form" onSubmit={run(async () => { const r = await api.register(phone, pw); setPhone(r.phone); setBotUrl(r.botUrl); setStep(2); })}>
-      <Field id="reg-phone" label="Phone number" hint="Include your country code if it is not local." type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+      <Field id="reg-phone" autoFocus label="Phone number" hint="Include your country code if it is not local." type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       <Field id="reg-pw" label="Password" hint="At least 8 characters. Choose one you will remember without your phone." type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
       <Msg>{err}</Msg>
       <button className="btn solid big" disabled={busy}>{busy ? 'Starting…' : 'Continue'}</button>
@@ -156,16 +180,16 @@ function Register({ api, setUser, go, say }) {
       <button type="button" className="linkbtn" onClick={() => { setStep(1); setCode(''); setErr(''); setBotUrl(null); }}>Use a different number</button>
     </form>}
     <div className="links"><span className="muted">Already have an account?</span><button className="linkbtn" onClick={() => go('login')}>Sign in</button></div>
-  </div></div>;
+  </div>;
 }
 
 function Login({ api, setUser, go }) {
   const [phone, setPhone] = useState(''); const [pw, setPw] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const submit = async (e) => { e.preventDefault(); setErr(''); setBusy(true); try { const r = await api.login(phone, pw); setUser(r.user); go('dashboard'); } catch (x) { setErr(x.message); } finally { setBusy(false); } };
-  return <div className="wrap page"><div className="narrow">
-    <h1 style={{ fontSize: '2.3rem' }}>Sign in</h1>
+  return <div className="auth">
+    <h1>Sign in</h1>
     <form className="form" onSubmit={submit}>
-      <Field id="login-phone" label="Phone number" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+      <Field id="login-phone" autoFocus label="Phone number" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       <Field id="login-pw" label="Password" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
       <Msg>{err}</Msg>
       <button className="btn solid big" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
@@ -173,18 +197,18 @@ function Login({ api, setUser, go }) {
     </form>
     <div className="links"><button className="linkbtn" onClick={() => go('forgot')}>Forgot your password?</button><button className="linkbtn" onClick={() => go('register')}>Create an account</button></div>
     <p className="fine">Only need your numbers right now? <button className="linkbtn" onClick={() => go('retrieve')}>Use the quick retrieval page</button>.</p>
-  </div></div>;
+  </div>;
 }
 
 function Forgot({ api, go, say }) {
   const [step, setStep] = useState(1); const [phone, setPhone] = useState(''); const [code, setCode] = useState(''); const [pw, setPw] = useState('');
   const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const run = (fn) => async (e) => { e.preventDefault(); setErr(''); setBusy(true); try { await fn(); } catch (x) { setErr(x.message); } finally { setBusy(false); } };
-  return <div className="wrap page"><div className="narrow">
-    <h1 style={{ fontSize: '2.3rem' }}>Reset your password</h1>
+  return <div className="auth">
+    <h1>Reset your password</h1>
     <p className="muted" style={{ marginTop: 10 }}>{step === 1 ? 'We will send a code through the Telegram bot, to the Telegram account you verified at sign-up.' : 'If that number has an account, the bot has sent a code. Open Telegram, then enter the code with a new password.'}</p>
     {step === 1 ? <form className="form" onSubmit={run(async () => { await api.forgot(phone); setStep(2); })}>
-      <Field id="fp-phone" label="Phone number" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+      <Field id="fp-phone" autoFocus label="Phone number" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       <Msg>{err}</Msg><button className="btn solid big" disabled={busy}>Send code</button>
     </form> : <form className="form" onSubmit={run(async () => { await api.reset(phone, code, pw); say('Password changed. Sign in with the new one.'); go('login'); })}>
       <label className="f" htmlFor="fp-code">Code<input id="fp-code" className="in otp" inputMode="numeric" maxLength={6} autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} required /></label>
@@ -192,7 +216,7 @@ function Forgot({ api, go, say }) {
       <Msg>{err}</Msg><button className="btn solid big" disabled={busy || code.length !== 6}>Change password</button>
     </form>}
     <div className="links"><button className="linkbtn" onClick={() => go('login')}>Back to sign in</button></div>
-  </div></div>;
+  </div>;
 }
 
 /* ---------- dashboard ---------- */
@@ -344,7 +368,7 @@ function Retrieve({ api, go }) {
     try { const r = await api.retrieve(phone, pw); setList(r.contacts); setPw(''); timer.current = setTimeout(clear, 5 * 60_000); }
     catch (x) { setErr(x.message); } finally { setBusy(false); }
   };
-  return <div className="wrap page retrieve"><div style={{ maxWidth: 640 }}>
+  return <div className="auth retrieve">
     {!list ? <>
       <h1>Get your contacts back</h1>
       <p className="muted" style={{ marginTop: 10 }}>Enter the phone number and password you registered with.</p>
@@ -362,10 +386,10 @@ function Retrieve({ api, go }) {
       <div className="found" role="list">{list.map((c) => <div className="row" role="listitem" key={c.id}>
         <div className="person"><span className="avatar" aria-hidden="true">{initials(c.name)}</span><div className="who"><b>{c.name}</b><span className="tel">{fmt(c.phone)}</span></div></div>
         <a className="btn solid sm" href={`tel:${c.phone}`}>Call</a></div>)}</div>
-      <div className="cta-row"><button className="btn big" onClick={clear}>Done, clear this screen</button></div>
+      <div className="cta-row"><button className="btn big" onClick={() => { clear(); go('home'); }}>Done, clear this screen</button></div>
       <p className="fine">If calling does not start from this device, read the number off the screen.</p>
     </>}
-  </div></div>;
+  </div>;
 }
 
 /* ---------- privacy ---------- */

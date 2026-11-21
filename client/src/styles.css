@@ -264,3 +264,25 @@ body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-event
     radial-gradient(circle at 0% 100%, #D6EFE2 0, #E6F7EE var(--blob-a), transparent calc(var(--blob-a) + 1px)),
     radial-gradient(circle at 100% 100%, #D6EFE2 0, #E6F7EE var(--blob-b), transparent calc(var(--blob-b) + 1px)); }
 @media (max-width: 520px) { body { --blob-a: 95px; --blob-b: 110px; } }
+
+/* ================= auth modals ================= */
+.auth-modal { max-width: 460px; position: relative; padding: clamp(22px, 4vw, 32px); }
+.modal h1 { font-size: 1.75rem; line-height: 1.1; letter-spacing: -0.03em; padding-right: 40px; }
+.modal .muted { font-size: .95rem; }
+.modal-x { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--sunk); color: var(--ink); display: grid; place-items: center; cursor: pointer; transition: background .15s; }
+.modal-x:hover { background: var(--line); }
+.modal-x svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.auth .form { margin-top: 18px; gap: 14px; }
+.auth-modal .found { border: 0; box-shadow: none; padding: 0; margin-top: 12px; background: transparent; }
+.auth-modal .found .row .tel { font-size: 1.3rem; }
+.auth-modal .found .avatar { width: 46px; height: 46px; }
+.auth-modal .fine { max-width: none; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+.scrim { animation: fadeIn .2s ease both; }
+.modal { animation: modalIn .28s cubic-bezier(.2,.7,.2,1) both; }
+@media (max-width: 520px) {
+  .scrim { align-items: end; padding: 0; }
+  .modal { max-width: none; border-radius: 22px 22px 0 0; max-height: 92dvh; }
+  .auth-modal { padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+}
