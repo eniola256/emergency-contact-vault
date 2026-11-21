@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { prisma } from '../db.js';
 import { requireUser } from '../auth.js';
@@ -6,6 +7,7 @@ import { encrypt, decrypt } from '../crypto.js';
 import { normalizePhone } from '../phone.js';
 
 export const contacts = Router();
+contacts.use(rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false, message: { error: 'Slow down and try again in a minute.' } }));
 contacts.use(requireUser);
 
 const body = z.object({ name: z.string().trim().min(1, 'Enter a name.').max(80), phone: z.string().min(6).max(24) });

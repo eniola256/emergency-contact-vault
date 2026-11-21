@@ -1,3 +1,4 @@
+import { passwordProblem } from './passwordPolicy.js';
 // Demo backend that lives in the browser. Same interface and the same rules as the real API:
 // 3 free slots, limit enforced here (not in the UI), slots granted only by the simulated webhook.
 const KEY = 'vault-demo-v1';
@@ -63,8 +64,8 @@ export const api = {
   demo: true, demoPhone: DEMO_PHONE, demoPassword: DEMO_PASS,
   async register(phone, password) {
     await ensureSeed(); await wait();
-    if (password.length < 8) throw fail('Use at least 8 characters.');
     const p = normalize(phone); if (!p) throw fail('Enter a valid phone number, including your country code if it is not local.');
+    { const w = passwordProblem(password, p); if (w) throw fail(w); }
     if (read().users[p]) throw fail('That number already has an account. Sign in instead.', 409);
     pendingReg[p] = await hash(p, password);
     return { phone: p, botUrl: null, expiresInMinutes: 10 };   // the real API returns a t.me deep link
@@ -87,8 +88,8 @@ export const api = {
   async forgot(phone) { await ensureSeed(); await wait(); const p = normalize(phone); if (p && read().users[p]) smsCode(p); return { ok: true }; },
   async reset(phone, code, password) {
     await wait(); const p = normalize(phone);
-    if (password.length < 8) throw fail('Use at least 8 characters.');
     if (!p || !read().users[p] || !checkCode(p, code)) throw fail('That code is wrong or has expired.');
+    { const w = passwordProblem(password, p); if (w) throw fail(w); }
     read().users[p].hash = await hash(p, password); save(); return { ok: true };
   },
   async deleteAccount(password) {

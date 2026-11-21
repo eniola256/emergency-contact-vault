@@ -10,6 +10,9 @@ import { sendTelegram } from '../telegram/index.js';
 import { codeMessage } from '../telegram/handler.js';
 import { startSession, endSession, requireUser, publicUser } from '../auth.js';
 import { FREE_SLOTS, config } from '../config.js';
+import { passwordProblem, makeLockout, LOCK_MESSAGE } from '../security.js';
+
+const lockout = makeLockout(prisma);
 
 export const auth = Router();
 
@@ -21,7 +24,7 @@ const loginLimiter = ipLimit(15, 15);
 const otpLimiter = ipLimit(10, 60);
 
 const phoneSchema = z.string().min(6).max(24);
-const passwordSchema = z.string().min(8, 'Use at least 8 characters.').max(128);
+const passwordSchema = z.string().min(1, 'Enter a password.').max(128);
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
 const OTP_MINUTES = 10, OTP_MAX_ATTEMPTS = 5, OTP_MAX_PER_HOUR = 3;
 
@@ -54,6 +57,8 @@ auth.post('/register', otpLimiter, async (req, res) => {
   if (!p.success) return bad(res, p.error.issues[0].message);
   const phone = normalizePhone(p.data.phone);
   if (!phone) return bad(res, 'Enter a valid phone number, including your country code if it is not local.');
+  const weak = passwordProblem(p.data.password, phone);
+  if (weak) return bad(res, weak);
   if (await prisma.user.findUnique({ where: { phone } })) return bad(res, 'That number already has an account. Sign in instead.', 409);
   if (!config.telegramToken || !config.telegramBot) {
     console.error('Telegram bot is not configured (TELEGRAM_BOT_TOKEN / TELEGRAM_BOT_USERNAME)');
@@ -93,15 +98,21 @@ auth.post('/login', loginLimiter, async (req, res) => {
   const p = z.object({ phone: phoneSchema, password: z.string().min(1).max(128) }).safeParse(req.body);
   const phone = p.success && normalizePhone(p.data.phone);
   const user = phone ? await prisma.user.findUnique({ where: { phone } }) : null;
+  if (lockout.isLocked(user)) return bad(res, LOCK_MESSAGE, 429);
   const ok = await bcrypt.compare(p.success ? p.data.password : '', user?.passwordHash || DUMMY_HASH);
-  if (!user || !ok) return bad(res, 'Phone number or password is wrong.', 401);
+  if (!user || !ok) {
+    if (user && (await lockout.fail(user))) return bad(res, LOCK_MESSAGE, 429);
+    return bad(res, 'Phone number or password is wrong.', 401);
+  }
+  await lockout.succeed(user);
+  if (user.telegramId) sendTelegram(user.telegramId, 'New sign-in to your AE Vault account. If this was not you, reset your password now.').catch(() => {});
   startSession(res, user.id);
   res.json({ user: await publicUser(user) });
 });
 
 auth.post('/logout', (req, res) => { endSession(res); res.json({ ok: true }); });
 
-auth.post('/forgot', otpLimiter, async (req, res) => {
+auth.post('/forgot', ipLimit(5, 60), async (req, res) => {
   const phone = normalizePhone(req.body?.phone);
   const user = phone ? await prisma.user.findUnique({ where: { phone } }) : null;
   if (user?.telegramId) {
@@ -116,7 +127,9 @@ auth.post('/reset', otpLimiter, async (req, res) => {
   const phone = normalizePhone(p.data.phone);
   const row = phone && await checkOtp(phone, 'RESET', p.data.code);
   if (!row) return bad(res, 'That code is wrong or has expired.');
-  await prisma.user.update({ where: { phone }, data: { passwordHash: await bcrypt.hash(p.data.password, 12) } });
+  const weak = passwordProblem(p.data.password, phone);
+  if (weak) return bad(res, weak);
+  await prisma.user.update({ where: { phone }, data: { passwordHash: await bcrypt.hash(p.data.password, 12), failedLogins: 0, lockedUntil: null } });
   await prisma.otpCode.deleteMany({ where: { phone, purpose: 'RESET' } });
   res.json({ ok: true });
 });
@@ -125,7 +138,11 @@ auth.get('/me', requireUser, async (req, res) => res.json({ user: await publicUs
 
 // Account deletion: removes the user and all contacts; purchase records stay with userId set to null.
 auth.post('/delete-account', requireUser, loginLimiter, async (req, res) => {
-  if (!(await bcrypt.compare(String(req.body?.password || ''), req.user.passwordHash))) return bad(res, 'Password is wrong.', 401);
+  if (lockout.isLocked(req.user)) return bad(res, LOCK_MESSAGE, 429);
+  if (!(await bcrypt.compare(String(req.body?.password || ''), req.user.passwordHash))) {
+    if (await lockout.fail(req.user)) return bad(res, LOCK_MESSAGE, 429);
+    return bad(res, 'Password is wrong.', 401);
+  }
   await prisma.user.delete({ where: { id: req.user.id } });
   endSession(res);
   res.json({ ok: true });

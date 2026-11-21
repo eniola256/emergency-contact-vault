@@ -38,3 +38,11 @@ Slot purchases are disabled: the site shows "Payments are not accepted at this t
 - Local development uses long polling (`TELEGRAM_MODE=polling`). In production use `TELEGRAM_MODE=webhook`, a public https `API_URL`, and a `TELEGRAM_WEBHOOK_SECRET`.
 - Run `npm test` in `server` for the bot-logic tests.
 - After pulling this change run `npx prisma db push` (adds `User.telegramId` and the new `OtpCode` columns).
+
+## Security hardening
+- Password policy (10+ chars, common-password and phone-number checks) on sign-up and reset: `server/src/security.js`, mirrored in `client/src/passwordPolicy.js`.
+- Per-account lockout: 5 wrong passwords locks for 15 minutes (login, retrieve, delete-account). Needs `npx prisma db push` (adds `failedLogins`, `lockedUntil`).
+- Origin check on all state-changing API routes; tighter limits on forgot-password and contacts; no stack traces in production logs.
+- Telegram alert on every sign-in.
+- Tests: `npm test`. The cross-account access test runs only with `TEST_DATABASE_URL` set to a throwaway database.
+- Still on you: rotate leaked secrets, serve over HTTPS, enable DB backups, keep `CONTACT_ENCRYPTION_KEY` backed up.

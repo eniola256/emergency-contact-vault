@@ -84,7 +84,7 @@ export default function App({ api }) {
         {modal && <AuthModal label={modal[0]} onClose={() => go('home')}>{React.createElement(modal[1], ctx)}</AuthModal>}
       </main>
       {(user || (route !== 'home' && !modal)) && <footer><div className="wrap">
-        <span>AE Vault stores numbers you choose to save. It needs an internet connection and the service to be running.</span>
+        <span>Demonstration project, not a guaranteed emergency service. It needs an internet connection and the service to be running.</span>
         <span><a href="#privacy" onClick={(e) => { e.preventDefault(); go('privacy'); }}>Privacy and data requests</a></span>
       </div></footer>}
       {toast && <div className="toast" role="status">{toast}</div>}
@@ -162,7 +162,7 @@ function Register({ api, setUser, go, say }) {
     <p className="muted" style={{ marginTop: 10 }}>{step === 1 ? 'Your phone number and password are all you need to get your contacts back later.' : `Verify ${fmt(phone)} with our Telegram bot, then enter the code it sends you.`}</p>
     {step === 1 ? <form className="form" onSubmit={run(async () => { const r = await api.register(phone, pw); setPhone(r.phone); setBotUrl(r.botUrl); setStep(2); })}>
       <Field id="reg-phone" autoFocus label="Phone number" hint="Include your country code if it is not local." type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-      <Field id="reg-pw" label="Password" hint="At least 8 characters. Choose one you will remember without your phone." type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
+      <Field id="reg-pw" label="Password" hint="At least 10 characters, not a common password. Choose one you will remember without your phone." type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
       <Msg>{err}</Msg>
       <button className="btn solid big" disabled={busy}>{busy ? 'Starting…' : 'Continue'}</button>
       <p className="fine" style={{ marginTop: 0 }}>Next you will confirm this number in Telegram. You need the Telegram account that uses it.</p>
@@ -212,7 +212,7 @@ function Forgot({ api, go, say }) {
       <Msg>{err}</Msg><button className="btn solid big" disabled={busy}>Send code</button>
     </form> : <form className="form" onSubmit={run(async () => { await api.reset(phone, code, pw); say('Password changed. Sign in with the new one.'); go('login'); })}>
       <label className="f" htmlFor="fp-code">Code<input id="fp-code" className="in otp" inputMode="numeric" maxLength={6} autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} required /></label>
-      <Field id="fp-pw" label="New password" hint="At least 8 characters." type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
+      <Field id="fp-pw" label="New password" hint="At least 10 characters, not a common password." type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
       <Msg>{err}</Msg><button className="btn solid big" disabled={busy || code.length !== 6}>Change password</button>
     </form>}
     <div className="links"><button className="linkbtn" onClick={() => go('login')}>Back to sign in</button></div>
@@ -399,11 +399,15 @@ function Privacy({ api, go }) {
   const submit = async (e) => { e.preventDefault(); setErr(''); setBusy(true); try { await api.report(kind, phone, message); setDone(true); } catch (x) { setErr(x.message); } finally { setBusy(false); } };
   return <div className="wrap page"><div className="two" style={{ marginTop: 0 }}>
     <div>
-      <h1 style={{ fontSize: 'clamp(2rem,5vw,2.8rem)' }}>Privacy and your data</h1>
+      <h1 style={{ fontSize: 'clamp(2rem,5vw,2.8rem)' }}>Privacy and terms</h1>
+      <Msg kind="ok">This is a demonstration project, not a guaranteed emergency service. Do not rely on it as your only copy of important numbers, and do not save real people’s numbers in the demo.</Msg>
       <div style={{ display: 'grid', gap: 18, marginTop: 22 }}>
         <div><h3>What we store</h3><p className="muted">Your phone number, a hashed password, and the names and numbers you save. Saved numbers are encrypted at rest. Payment records keep a reference, amount and status.</p></div>
         <div><h3>Who can see your contacts</h3><p className="muted">Only someone who signs in with your phone number and password. Contacts are never on a public page or readable by the browser without signing in.</p></div>
         <div><h3>Saving someone else’s number</h3><p className="muted">Account holders agree to save only numbers they have a legitimate reason and permission to keep. If your number was saved and you want it removed, tell us using the form.</p></div>
+        <div><h3>How we protect it</h3><p className="muted">Passwords are hashed, never stored as typed. Saved numbers are encrypted. Accounts lock for 15 minutes after repeated wrong passwords, and sign-in codes expire and can be tried only a few times. If your Telegram is linked, we message you when your account is signed in to.</p></div>
+        <div><h3>Where your data is kept</h3><p className="muted">Data is hosted with a cloud database provider and verification codes are sent through Telegram, both outside Nigeria. We keep your data until you delete your account.</p></div>
+        <div><h3>Terms of use</h3><p className="muted">Use AE Vault only for numbers you are entitled to keep, never to harass or track anyone. The service is provided as is, may be unavailable, and needs an internet connection. Accounts used for abuse may be removed.</p></div>
         <div><h3>Deleting your account</h3><p className="muted">Signed-in users can delete their account and all contacts from the dashboard. Only payment records that must legally be kept remain.</p></div>
       </div>
     </div>

@@ -13,6 +13,8 @@ model User {
   passwordHash String
   contactLimit Int            @default(3)      // 3 free + purchased, enforced by backend
   telegramId   String?        @unique          // Telegram account that verified this phone
+  failedLogins Int            @default(0)      // wrong passwords since last success
+  lockedUntil  DateTime?                       // account lockout
   createdAt    DateTime       @default(now())
   contacts     Contact[]
   purchases    SlotPurchase[]
