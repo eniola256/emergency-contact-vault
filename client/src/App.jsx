@@ -97,7 +97,7 @@ const Icon = ({ children }) => <svg viewBox="0 0 24 24" aria-hidden="true">{chil
 
 function Home({ go, user }) {
   return <>
-    <section className="landing"><div className="wrap landing-in">
+    <section className={`landing${user ? " signed" : ""}`}><div className="wrap landing-in">
       <div className="icons" aria-hidden="true">
         <span className="tile"><Icon><path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></Icon></span>
         <i className="join" />

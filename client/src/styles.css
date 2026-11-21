@@ -286,3 +286,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-event
   .modal { max-width: none; border-radius: 22px 22px 0 0; max-height: 92dvh; }
   .auth-modal { padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* signed in: the page scrolls, so give the hero room under the header */
+.landing.signed { padding-block: clamp(48px, 10vh, 110px) clamp(40px, 8vh, 90px); }
