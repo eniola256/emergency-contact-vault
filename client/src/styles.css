@@ -312,3 +312,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-event
   .landing .lead { font-size: clamp(1.05rem, min(1.7vw, 2.7vh), 1.6rem); max-width: 44ch; }
   .landing .btn.big { font-size: clamp(1rem, 2.3vh, 1.2rem); min-height: clamp(44px, 6.4vh, 58px); }
 }
+
+/* animated network background (canvas, fixed behind everything) */
+.net-bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }

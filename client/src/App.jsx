@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import NetworkBg from './NetworkBg.jsx';
 
 /* ---------- helpers ---------- */
 const ROUTES = ['home', 'register', 'login', 'forgot', 'dashboard', 'retrieve', 'paid', 'privacy'];
@@ -61,6 +62,7 @@ export default function App({ api }) {
 
   return (
     <>
+      <NetworkBg />
       {api.demo && <div className="demo-bar"><div className="wrap">
         <b>Demo mode.</b> <span className="demo-note">Everything stays in this browser. The Telegram bot and card payments are simulated.</span>
         <span className="muted" style={{ color: 'inherit', opacity: .8 }}>Demo login: <span className="num">{api.demoPhone}</span> / {api.demoPassword}</span>
