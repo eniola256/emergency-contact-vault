@@ -1,0 +1,44 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 700 1.4rem/1 var(--font-body);
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #2f80ff, #0b58e0);
+  color: #fff;
+  box-shadow: 0 8px 14px -8px rgba(11, 99, 246, 0.8);
+}
+.brand-mark svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 520px) {
+  .brand {
+    font-size: 1.25rem;
+  }
+}
+@media (max-width: 360px) {
+  .brand {
+    font-size: 1.15rem;
+  }
+}

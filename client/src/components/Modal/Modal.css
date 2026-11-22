@@ -1,0 +1,110 @@
+/* Dialogs: the dimmed backdrop (.scrim) and the white card (.modal).
+   .auth-modal is the wider variant used for sign in, sign up, reset and retrieve.
+   On phones the card becomes a bottom sheet. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(12, 23, 51, 0.42);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease both;
+}
+
+.modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: 92vh;
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 30px 80px -24px rgba(12, 23, 51, 0.5);
+  animation: modalIn 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.modal .muted {
+  font-size: 0.95rem;
+}
+
+/* the simulated checkout card in the demo */
+.sandbox {
+  border-style: dashed;
+}
+
+.auth-modal {
+  position: relative;
+  max-width: 460px;
+  padding: clamp(22px, 4vw, 32px);
+}
+.auth-modal .fine {
+  max-width: none;
+}
+.modal h1 {
+  padding-right: 40px; /* keeps the title clear of the close button */
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.modal-x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sunk);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.modal-x:hover {
+  background: var(--line);
+}
+.modal-x svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .scrim {
+    align-items: end;
+    padding: 0;
+  }
+  .modal {
+    max-width: none;
+    max-height: 92dvh;
+    border-radius: 22px 22px 0 0;
+  }
+  .auth-modal {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+}

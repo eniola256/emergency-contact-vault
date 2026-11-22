@@ -1,0 +1,15 @@
+/* The list of contacts shown after a successful lookup (inside the retrieve dialog). */
+.found {
+  display: grid;
+  margin-top: 12px;
+}
+.found .row {
+  padding: 18px 0;
+}
+.found .row .tel {
+  font-size: 1.3rem;
+}
+.found .avatar {
+  width: 46px;
+  height: 46px;
+}

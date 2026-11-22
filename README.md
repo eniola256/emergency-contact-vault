@@ -46,3 +46,18 @@ Slot purchases are disabled: the site shows "Payments are not accepted at this t
 - Telegram alert on every sign-in.
 - Tests: `npm test`. The cross-account access test runs only with `TEST_DATABASE_URL` set to a throwaway database.
 - Still on you: rotate leaked secrets, serve over HTTPS, enable DB backups, keep `CONTACT_ENCRYPTION_KEY` backed up.
+
+## Client structure
+```
+client/src/
+  App.jsx            routing and shared state only
+  main.jsx           loads the global styles and picks the real or demo API
+  api/               api.js (real backend), mockApi.js (demo, runs in the browser)
+  lib/               routes.js, format.js, passwordPolicy.js
+  styles/            base (tokens, type), backdrop, buttons, layout, forms
+  components/        one folder per component, each with its own .css
+    Brand, Header, Footer, DemoBar, Toast, Modal, Field, Msg, Pips, ContactRow, NetworkBg, Icon
+  pages/             one folder per page, each with its own .css where it needs one
+    Home, Auth (Login, Register, Forgot), Dashboard, Retrieve, Paid, Privacy
+```
+Colours, fonts and radii are tokens at the top of `styles/base.css`. Run `npm run format` in `client` to format with Prettier.

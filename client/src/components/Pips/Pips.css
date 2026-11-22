@@ -1,0 +1,17 @@
+/* Row of squares showing how many slots are used. */
+.pips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pips i {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  border: 1.5px solid var(--outline);
+  background: var(--surface);
+}
+.pips i.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}

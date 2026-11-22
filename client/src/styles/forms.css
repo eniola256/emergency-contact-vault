@@ -1,0 +1,40 @@
+/* Form layout and the small text-style buttons used around forms. */
+.form {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 18px;
+  font-size: 0.95rem;
+}
+
+.linkbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 6-digit code box */
+.otp {
+  font: 700 1.6rem var(--font-display);
+  letter-spacing: 0.5em;
+  text-align: center;
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.steps li::marker {
+  font-weight: 700;
+}
