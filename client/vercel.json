@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://emergency-contact-vault.onrender.com"
+      "destination": "https://emergency-contact-vault.onrender.com/api/:path*"
     }
   ]
 }
