@@ -1,28 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './NetworkBg.css';
 
 // A faint network of dots joined by thin lines, with an occasional dot slowly lighting up.
-// Off on phones and touch-first devices; a single still frame when the user prefers reduced motion.
-const LINK = 190; // px: dots closer than this get a line
+// On small screens it runs lighter (fewer dots, shorter lines, 30 frames a second) to save battery.
+// A single still frame when the user prefers reduced motion.
 const BLUE = '11,99,246';
-
-const wantsEffect = () =>
-  typeof window !== 'undefined' && window.matchMedia
-    ? !window.matchMedia('(max-width: 719px)').matches &&
-      !window.matchMedia('(pointer: coarse)').matches
-    : false;
+const isSmall = () => window.innerWidth < 720;
 
 export default function NetworkBg() {
   const ref = useRef(null);
-  const [on, setOn] = useState(wantsEffect);
-  useEffect(() => {
-    const f = () => setOn(wantsEffect());
-    window.addEventListener('resize', f);
-    return () => window.removeEventListener('resize', f);
-  }, []);
 
   useEffect(() => {
-    if (!on) return;
     const cv = ref.current;
     if (!cv) return;
     const ctx = cv.getContext('2d');
@@ -34,16 +22,22 @@ export default function NetworkBg() {
       last = 0,
       nextGlow = 1200,
       t = 0,
-      resizeT = 0;
+      resizeT = 0,
+      small = false,
+      link = 190; // px: dots closer than this get a line
 
     const setup = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      small = isSmall();
+      link = small ? 120 : 190;
+      const dpr = Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2);
       w = window.innerWidth;
       h = window.innerHeight;
       cv.width = w * dpr;
       cv.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = Math.max(24, Math.min(80, Math.round((w * h) / 17000)));
+      const n = small
+        ? Math.max(18, Math.min(34, Math.round((w * h) / 9000)))
+        : Math.max(24, Math.min(80, Math.round((w * h) / 17000)));
       nodes = Array.from({ length: n }, () => {
         const a = Math.random() * Math.PI * 2,
           v = 6 + Math.random() * 8;
@@ -65,9 +59,9 @@ export default function NetworkBg() {
         for (let j = i + 1; j < nodes.length; j++) {
           const b = nodes[j],
             d = Math.hypot(a.x - b.x, a.y - b.y);
-          if (d > LINK) continue;
+          if (d > link) continue;
           const boost = Math.max(a.glow, b.glow);
-          ctx.strokeStyle = `rgba(${BLUE},${(0.16 + boost * 0.34) * (1 - d / LINK)})`;
+          ctx.strokeStyle = `rgba(${BLUE},${(0.16 + boost * 0.34) * (1 - d / link)})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
@@ -95,6 +89,7 @@ export default function NetworkBg() {
 
     const step = (now) => {
       raf = requestAnimationFrame(step);
+      if (small && now - last < 32) return; // ~30 fps on small screens
       const dt = Math.min(now - (last || now), 64);
       last = now;
       t += dt;
@@ -137,7 +132,7 @@ export default function NetworkBg() {
       clearTimeout(resizeT);
       window.removeEventListener('resize', onResize);
     };
-  }, [on]);
+  }, []);
 
-  return on ? <canvas ref={ref} className="net-bg" aria-hidden="true" /> : null;
+  return <canvas ref={ref} className="net-bg" aria-hidden="true" />;
 }
