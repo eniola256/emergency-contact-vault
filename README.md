@@ -61,3 +61,12 @@ client/src/
     Home, Auth (Login, Register, Forgot), Dashboard, Retrieve, Paid, Privacy
 ```
 Colours, fonts and radii are tokens at the top of `styles/base.css`. Run `npm run format` in `client` to format with Prettier.
+
+## Deploy: Vercel (client) + Render (API) + Supabase (database)
+1. **Database:** already on Supabase. Run `npx prisma db push` from `server` once with the Session pooler `DATABASE_URL`.
+2. **API on Render** (Web Service, root directory `server`):
+   - Build command: `npm install && npx prisma generate`
+   - Start command: `npm start`
+   - Environment: `NODE_VERSION=22`, `NODE_ENV=production`, `DATABASE_URL`, `SESSION_SECRET`, `CONTACT_ENCRYPTION_KEY`, `CLIENT_URL` (the Vercel URL), `API_URL` (the Render URL), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_MODE=webhook`, `TELEGRAM_WEBHOOK_SECRET`, `PAYMENTS_ENABLED=false`.
+3. **Client on Vercel** (root directory `client`, framework Vite): put the Render URL in `client/vercel.json`. The rewrite sends `/api/*` to Render, so the browser only talks to the Vercel domain and the session cookie stays first-party.
+4. Set `CLIENT_URL` on Render to the final Vercel URL (no trailing slash) and redeploy.
