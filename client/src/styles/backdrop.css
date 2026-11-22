@@ -1,0 +1,42 @@
+/* The page background is fixed to the window, so content scrolls over it.
+   A soft blue glow behind the headline and two mint circles in the bottom corners. */
+body {
+  --blob-a: 150px;
+  --blob-b: 190px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(55% 50% at 50% 34%, rgba(11, 99, 246, 0.08), transparent 72%);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+      circle at 0% 100%,
+      #d6efe2 0,
+      #e6f7ee var(--blob-a),
+      transparent calc(var(--blob-a) + 1px)
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      #d6efe2 0,
+      #e6f7ee var(--blob-b),
+      transparent calc(var(--blob-b) + 1px)
+    );
+}
+
+@media (max-width: 520px) {
+  body {
+    --blob-a: 95px;
+    --blob-b: 110px;
+  }
+}

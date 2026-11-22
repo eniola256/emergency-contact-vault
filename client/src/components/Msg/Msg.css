@@ -1,0 +1,16 @@
+.msg {
+  padding: 11px 14px;
+  border-radius: var(--r-sm);
+  font-size: 0.95rem;
+}
+.msg.err {
+  background: var(--err-soft);
+  color: var(--err);
+}
+.msg.ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.msg.info {
+  background: var(--sunk);
+}

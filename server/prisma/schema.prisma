@@ -12,6 +12,9 @@ model User {
   phone        String         @unique          // E.164
   passwordHash String
   contactLimit Int            @default(3)      // 3 free + purchased, enforced by backend
+  telegramId   String?        @unique          // Telegram account that verified this phone
+  failedLogins Int            @default(0)      // wrong passwords since last success
+  lockedUntil  DateTime?                       // account lockout
   createdAt    DateTime       @default(now())
   contacts     Contact[]
   purchases    SlotPurchase[]
@@ -61,7 +64,9 @@ model OtpCode {
   id           String     @id @default(cuid())
   phone        String
   purpose      OtpPurpose
-  codeHash     String
+  codeHash     String?                              // set once the bot has sent a code
+  startHash    String?    @unique                   // hash of the deep-link token (REGISTER)
+  telegramId   String?                              // Telegram account that opened the link
   passwordHash String?                              // pending registration only
   attempts     Int        @default(0)
   expiresAt    DateTime

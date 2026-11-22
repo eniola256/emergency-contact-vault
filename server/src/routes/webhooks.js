@@ -8,6 +8,7 @@ export const webhooks = Router();
 
 // Raw body is required for signature verification, so this router is mounted BEFORE express.json().
 webhooks.post('/bachs', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
+  if (!config.paymentsEnabled) return res.sendStatus(404);
   let event;
   try {
     const headers = new Headers();

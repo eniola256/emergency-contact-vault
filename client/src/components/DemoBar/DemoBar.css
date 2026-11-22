@@ -1,0 +1,31 @@
+/* Demo build only: the strip under the top of the page and the simulated Telegram code banner. */
+.demo-bar {
+  border-bottom: 1px solid var(--line);
+  background: #f1f5fd;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.demo-bar b {
+  color: var(--ink);
+}
+.demo-bar .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding-block: 5px;
+}
+
+.sms {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+@media (max-width: 520px) {
+  .demo-bar .demo-note {
+    display: none;
+  }
+  .demo-bar .wrap {
+    font-size: 0.8rem;
+  }
+}

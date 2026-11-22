@@ -1,12 +1,18 @@
 // Real API client. In demo builds (VITE_DEMO=1) main.jsx swaps in mockApi.js instead.
 async function req(method, path, body) {
   const res = await fetch(`/api${path}`, {
-    method, credentials: 'include',
+    method,
+    credentials: 'include',
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) { const e = new Error(data.error || 'Something went wrong. Try again.'); e.status = res.status; e.code = data.code; throw e; }
+  if (!res.ok) {
+    const e = new Error(data.error || 'Something went wrong. Try again.');
+    e.status = res.status;
+    e.code = data.code;
+    throw e;
+  }
   return data;
 }
 export const api = {

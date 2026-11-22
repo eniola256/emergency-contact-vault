@@ -1,0 +1,32 @@
+/* Labelled text input. */
+label.f {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+label.f small {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+input.in,
+select.in,
+textarea.in {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1.5px solid var(--outline);
+  border-radius: 12px;
+  background: var(--surface);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+input.in:focus,
+select.in:focus,
+textarea.in:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  outline: none;
+}
